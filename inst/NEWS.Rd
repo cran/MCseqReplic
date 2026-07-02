@@ -1,6 +1,44 @@
 \name{NEWS}
 \title{NEWS file of the MCseqReplic package}
 
+\section{Changes in version 1.1.0 [2026-07-01]}{
+
+  \subsection{New functions}{
+    \itemize{
+      \item
+      \code{MCcompgrp} collects group comparison statistics per MC-sets.
+      \item
+      \code{ggplotMCcqi} ggplot, by MC-sets, the selected range values of a CQI selected in a \code{MCclustQ} object.
+      \item
+      \code{print} method for \code{MCclustQ} objects returned by \code{MCclustqual}.
+    }
+  }
+  \subsection{Changes in existing functions}{
+    \itemize{
+      \item
+      \code{MCclustqual} elements \code{$qual.max} and \code{$qual.tab} now include results for observed sequences when attribute \code{"obs"} of disslist is \code{TRUE}. Element \code{qual.obs} has been suppressed from the outcome.
+      \item
+      \code{MCclustqual} and \code{MCmdscorr}: argument \code{verbose} in place of \code{silent}.       \item
+      \code{MCclustqual} and \code{MCmdscorr}: argument \code{core} now can be \code{"auto"}.
+      \item
+      \code{MCclustcomp} new logical argument \code{AMI} to specify if the costly AMI should be computed.
+    }
+  }
+  \subsection{Misc.}{
+    \itemize{
+      \item
+      Added vignette.
+      \item
+      Added REFERENCES.bib
+      \item
+      Outdated function \code{seqdistMCSE} suppressed, use MCseqdistSE instead.
+      \item
+      Now requires version >= 1.1.0 of \code{aricode}.
+    }
+  }
+
+}
+
 \section{Changes in version 1.0.0 [2026-04-29] }{
 
   \subsection{Changes in existing functions}{

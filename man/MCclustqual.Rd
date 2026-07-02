@@ -2,6 +2,8 @@
 % Please edit documentation in R/MCclustqual.R
 \name{MCclustqual}
 \alias{MCclustqual}
+\alias{ggplotMCcqi}
+\alias{print.MCclustQ}
 \title{Cluster quality measures by MC-sets}
 \usage{
 MCclustqual(
@@ -11,35 +13,78 @@ MCclustqual(
   weights = NULL,
   core = 1,
   snow = TRUE,
+  verbose = !silent,
   silent = FALSE,
   ...
 )
+
+ggplotMCcqi(
+  data,
+  cqi = "PBC",
+  meancqi = TRUE,
+  scalelwd = 1,
+  linecolor = NULL,
+  ...
+)
+
+\method{print}{MCclustQ}(x, all = FALSE, nMC = 5, ...)
 }
 \arguments{
 \item{disslist}{List of MC-dissimilarity matrices (or \code{dist} objects).}
 
-\item{ncluster}{integer vector. Range of number of groups. Default is \code{2:10}.}
+\item{ncluster}{integer vector. Maximum number of groups. Default is \code{10}. CQIs are computed for the range \code{2:ncluster}}
 
 \item{clustmeth}{character. Clustering method. Either \code{"PAM"} (default) or a \code{stats::\link{hclust}} method.}
 
 \item{weights}{vector of doubles. Case weights. If \code{NULL} (default), equal weights are used.}
 
-\item{core}{Integer. Number of cores for parallel computing.}
+\item{core}{Integer or \code{"auto"}. Number of cores for parallel computing If \code{"auto"}, the maximum available cores are used.}
 
 \item{snow}{Logical. If \code{TRUE}, \code{doSNOW} is used for parallel computing, otherwise \code{doParallel} is used.}
 
-\item{silent}{Logical. Should waiting and timing messages be hidden?}
+\item{verbose}{Logical. Should waiting and timing messages be printed?}
 
-\item{...}{Further arguments passed to clustering functions.}
+\item{silent}{Logical. Deprecated, use \code{!verbose} instead!}
+
+\item{...}{further arguments passed to or from other methods.}
+
+\item{data}{an \code{MCclustQ} object as returned by \code{MCclustqual}}
+
+\item{cqi}{string. The name of the selected CQI.}
+
+\item{meancqi}{logical. Should the range of mean values of the selected CQI be plotted?}
+
+\item{scalelwd}{double. Line width scale value.}
+
+\item{linecolor}{vector of three line colors in the order Mean, Obs, MCset. If \code{NULL}, default colors are used and if of length less than 3, default colors are used for the first elements.}
+
+\item{x}{\code{MCclustQ} object as returned by \code{MCclustqual}.}
+
+\item{all}{logical. Should tables by MC-sets also be printed? Default is \code{FALSE}.}
+
+\item{nMC}{numeric. Maximal number of MC-sets for which optimal size by CQIs are printed. Default is 5.}
 }
 \value{
-A list with two lists: \code{qual.tab}, list of tables of cluster quality statistics per MC-dissimilarity matrix, and \code{qual.max} list of cluster number $k$ for which the statistics reach their maximum (minimum for HC), \code{max.freq}, the frequency table of maximum over the MC-replicated sets, and \code{qual.obs}, cluster quality indexes for the observed sequences.
+List of length 3: \cr
+- \code{qual.tab}: list of tables of cluster quality statistics per MC-dissimilarity matrix,\cr
+- \code{qual.max}: table of cluster number $k$ for which the statistics reach their maximum (minimum for HC) by MC-sets and observed sequence set (rows),\cr
+- \code{max.freq}: the frequency table of optimal $k$ over the MC-replicated sets, and\cr
+
+\code{ggplotMCcqi} returns the ggplot object.
+
+the print method returns the last printed tables.
 }
 \description{
 Cluster quality measures for a range of number of groups by MC-replicated set.
+
+\code{ggplotMCcqi} makes a ggplot of the range of values of the selected CQI by MC-sets and for the observed sequences. When \code{attr(data,"obs")} is \code{TRUE}, the range of CQI values for the observed sequences is also plotted.
+
+The  print method only prints by default the \code{qual.max} and \code{max.freq} tables of MCclustQ objects.
 }
 \details{
 When \code{attr(MCdisslist,"obs")} is \code{TRUE}, the last element of \code{disslist} is treated as the dissimilarity matrix of the observed sequences.
+
+\code{MCclustqual} computes the range of CQI values for all the CQIs included in the \code{stats} element returned by \code{WeightedCluster::\link[WeightedCluster]{wcClusterQuality}}.
 }
 \examples{
 ## mini test data, 6 sequences of length 4, 4 unique sequences
@@ -61,11 +106,21 @@ altseq.list <- MCseqReplicate(s.exdata, J=1, R=3)
 disslist <- MCdisslist(altseq.list, method="LCS")
 diss.o <- seqdist(s.exdata, method="LCS")
 ## cluster per MC-dissimilarity matrices
-res <- MCclustqual(disslist,ncluster=3)
+res <- MCclustqual(disslist,ncluster=3, verbose=FALSE)
 res
+ggplotMCcqi(res,"PBC")
 
 
 }
+\references{
+\insertNoCite{Studer2013}{MCseqReplic}
+  \insertAllCited{}
+}
 \seealso{
 \code{\link[WeightedCluster]{as.clustrange}},  \code{\link[WeightedCluster]{wcKMedRange}}
+
+\code{\link{MCclustqual}}.
+}
+\author{
+Gilbert Ritschard
 }

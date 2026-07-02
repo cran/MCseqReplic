@@ -10,7 +10,7 @@
 #' @param dissrepl list, string, or object of class \code{u.diss}. If a list, list of same length as \code{MCrseqdata}. List of dissimilarity matrices or \code{dist} objects. If a character string, a method name for computing the dissimilarities with \code{\link{MCudist}}. Can also be an object of class \code{u.diss} previously computed with \code{MCudist}.
 #' @param udiss logical. When \code{dissrepl} is a distance method, should distance be computed with \code{\link{MCudist}}. See details.
 #' @param full.matrix logical. Should dissimilarities be organized in matrix form? Default is \code{FALSE} in which case dissimilarity matrices are converted into \code{dist} objects. If \code{TRUE}, dissimilarity \code{dist} objects are converted into matrices.
-#' @param ... additional arguments passed to \code{\link{MCudist}} or \code{\link{MCdisslist}} when \code{dissrepl} is a method name.
+#' @param ... further arguments passed to \code{\link{MCudist}} or \code{\link{MCdisslist}} when \code{dissrepl} is a method name.
 #'
 #' @details
 #' Providing \code{u.diss} distances or computing distances with \code{MCudist} may be faster and can save space when the number of unique replicated sequences is smaller than the sample size times the squared root of R, which can be checked with \code{\link{MCnunique}}. When the number of unique replicated sequences largely exceeds the threshold, it is more efficient to compute distance matrices separately for each updated set of sequences with \code{\link{MCdisslist}} or by setting \code{udiss=FALSE}.

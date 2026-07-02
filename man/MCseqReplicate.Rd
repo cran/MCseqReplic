@@ -77,7 +77,8 @@ Pj <- MCpj(Emean=1.1, pzero=.5)
 (altseq2.list <- MCseqReplicate(s.exdata, J=Pj, R=3))
 }
 \references{
-Ritschard, G. and Liao, T.F. (2026). Assessing the Impact of Timing Errors in Sequence Analysis. \emph{International Journal of Social Research Methodology}. Forthcoming
+\insertNoCite{RitschardLiao2026IJoSRM}{MCseqReplic}
+  \insertAllCited{}
 }
 \seealso{
 \code{\link{MCpj}}

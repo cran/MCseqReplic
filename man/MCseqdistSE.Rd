@@ -21,7 +21,7 @@ MCseqdistSE(
 
 \item{full.matrix}{logical. Should dissimilarities be organized in matrix form? Default is \code{FALSE} in which case dissimilarity matrices are converted into \code{dist} objects. If \code{TRUE}, dissimilarity \code{dist} objects are converted into matrices.}
 
-\item{...}{additional arguments passed to \code{\link{MCudist}} or \code{\link{MCdisslist}} when \code{dissrepl} is a method name.}
+\item{...}{further arguments passed to \code{\link{MCudist}} or \code{\link{MCdisslist}} when \code{dissrepl} is a method name.}
 }
 \value{
 Five objects:\cr

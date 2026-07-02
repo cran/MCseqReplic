@@ -1,0 +1,244 @@
+---
+title: "Assessing Effects of Timing Errors on Sequence Analaysis Outcomes with MCseqReplic"
+author: "Gilbert Ritschard"
+date: "July 1, 2026"
+output: rmarkdown::html_vignette
+bibliography: '`r system.file("REFERENCES.bib", package="MCseqReplic")`'
+vignette: >
+  %\VignetteIndexEntry{Assessing Effects of Timing Errors on Sequence Analaysis Outcomes with MCseqReplic}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE, purl=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r include=FALSE}
+library(MCseqReplic)
+```
+
+## Introduction
+
+The common practice in sequence analysis (SA) in social research is to consider sequence data as exact, i.e., free of measurement errors, which is a strong assumption in a domain where data are most often collected through surveys. In particular, timing errors typically result from seam effects in prospective longitudinal surveys [@EngstromSinibaldi2024JoSSaM;@JaeckleEckman2020JoSSaM] and because of telescoping effects in retrospective surveys [@AbatedeGibsonHirvonenWolle2022TWBER;@CelhayMeyerMittag2024JoE].
+
+The MCseqReplic package provides different tools, based on Monte-Carlo (MC) simulations, for exploring how SA outcomes could vary or resist in presence of timing errors. The MC simulation procedure is detailed in @RitschardLiao2026IJoSRM. Starting with a sequence object created with TraMineR [@GabadinhoRitschardMullerStuder2011JSS], the main function, `MCseqReplicate`, replicates multiple times the sequence dataset with randomly modified transition times. Using this series of modified datasets---called MC-sets---additional functions can generate the associated series of MC-dissimilarity matrices, estimate standard errors of the observed dissimilarities, compute cluster quality indices (CQI) for a range of partition sizes by MC-set, compute cluster comparison indices (CCI) comparing the solution resulting from each MC-set with the partitioning of the observed sequences, and compute correlations of MDS scores of MC-sets with MDS scores of observed dissimilarities.
+
+
+## A Quick Tour
+
+For this quick tour, we consider the following toy dataset of six sequences of length 4, of which four are unique sequences.
+
+```{r data}
+exdata <- read.table(text="
+                a a b b
+                a a b b
+                b b a a
+                a c c b
+                b b a c
+                b b a c
+                ")
+weights=rep(1, nrow(exdata))
+s.exdata <- TraMineR::seqdef(exdata, weights = weights, id=paste("id",1:nrow(exdata), sep=""))
+
+```
+
+Function `MCseqReplicate` proposes a choice of three basic models to generate the random time changes [see details in @RitschardLiao2026IJoSRM]:
+
+- `"indep"` transition times are changed independently of each others
+- `"keep.dss"` time changes are constraint to respect the DSS, i.e. the sequence of successive states.
+- `"relative"` after each time change, the time to the next transition remains unchanged
+
+We illustrate by generating only three replications, for which we can print all replicated MC-sets. In practice, as shown in @RitschardLiao2026IJoSRM, we would need at least 100 MC-sets to stabilize sensitivity results and it would not make sense to print so many MC-sets. We select the default model `"keep.dss"` and, by setting J$=1$, a uniform time change distribution among the three values $\{-1,0,1\}$. 
+
+```{r repdata}
+## 3 altered sequence datasets
+set.seed(3)
+(altseq.list <- MCseqReplicate(s.exdata, J=1, R=3, include.obs=TRUE))
+
+```
+
+`MCseqReplicate` returns a list of MC-sets, the replicated datasets, together here with the observed dataset as last element because we have set `include.obs=TRUE`. Inputting this list to `MCdisslist` together with instructions about which dissimilarity measure to use, we get the list of dissimilarity matrices.
+
+```{r repdiss}
+(dist.list <- MCdisslist(altseq.list, method="LCS"))
+
+```
+
+Instead of the uniform distribution of timing error at each transition that we specified with `J=1`, we could specify any distribution such as `J=c(1,2,3)`, which gives higher chances to delay a transition than advancing it. Using `MCpj`, we can also specify a distribution complying with a priori information about the probability of no error and the expected non-zero timing error (see the Appendix provided as supplementary material of @RitschardLiao2026IJoSRM). For example:
+
+```{r}
+MCpj(Emean=1.05, pzero=.5)
+```
+The attribute ``"lambda"` is the parameter value of the underlying Poisson distribution.
+
+Once we have the list of dissimilarity matrices, we can replicate multiple times any dissimilarity-based analysis. But let us first explore how the dissimilarities vary across MC-sets and their correlations with observed dissimilarities.
+
+### Exploring the MC-simulated dissimilraties
+
+We can compute statistical summaries of the distribution of each dissimilarity across the MC-sets.
+
+```{r MCseqdistSE}
+
+(MCdistSE <- MCseqdistSE(dist.list))
+```
+`MC.sd` measures departure from `MC.mean`, and the standard error `MC.se` departure from the corresponding observed dissimilarities `diss.o`. Function `MCratios` returns additional summaries relative to the ratios of the observed distances over their standard errors
+
+
+```{r MCratios}
+MCratios(MCdistSE)
+```
+With function `MCdisscor` we get the correlations (Spearman by default) between distances in each MC-set and the observed distances. 
+
+```{r MCdisscorr}
+MCdisscorr(dist.list)
+
+```
+Here, the distances computed on the second MC-set are very strongly correlated with the distances between the observed sequences.
+
+Now that we have gained some information about how distances can vary across MC-sets, let us look at how SA outcomes can be affected by timing errors. We successively consider group comparison, clustering, and MDS scores but we could as well analyze effects on other outcomes such as representative sequences [@GabadinhoRitschard2013typical] and the distribution of complexity indicators [@Ritschard2023SMaR], the latter being of course independent of the distances between sequences.
+
+### Group comparison
+
+For example, assuming the first 3 sequences are female sequences and the other male sequences, we replicate the sex-group comparison within each MC-set and the observed sequences using `TraMineR::dissassoc`, which returns, among others, pseudo $F$ and $R^2$ values with their p-values [@StuderRitschardGabadinhoMuller2011SMR]. To save place, we print the outcome for the first MC-set only. 
+
+```{r repcompdiss-dissassoc}
+sex <- c("f","f","f","m","m","m")
+assoc.list <- lapply(dist.list, 
+                     TraMineR::dissassoc, 
+                     group=sex)
+assoc.list[[1]]
+
+```
+Since we have only two groups (`f` and `m`), we can also use function `TraMineRextras::dissCompare` to compute LRT and $\Delta$BIC statistics [@LiaoFasang2020SM]:
+
+```{r repcompdiss-dissCompare, message=FALSE}
+library(TraMineRextras) ## for function dissCompare
+comp.list <- suppressMessages(lapply(dist.list, 
+                                     TraMineRextras::dissCompare, 
+                                     group=sex, 
+                                     squared=FALSE, 
+                                     s=0))
+comp.list[[1]]
+```
+
+Alternatively, we can collect statistics (R2, LRT, BIC) and p-values with function `MCcompgrp`:
+
+```{r compgrp-stat-table}
+comptab <- MCcompgrp(dist.list, group=sex, 
+                     dissassoc.args=list(R=1000),
+                     dissCompare.args=list(squared=FALSE))
+round(comptab,3)
+
+```
+Summarizing group comparison results of the three MC-sets
+
+```{r compgrp-summary}
+summary(comptab[-nrow(comptab),])
+
+```
+
+
+We do not comment the inferential results, which don't make much sense for this illustrative example with two groups of size 3. 
+
+
+### Clustering
+
+Regarding clustering, a first aspect of interest is the number of clusters. We investigate how, for Ward hierarchical clustering, this number can vary with timing errors by means of function `MCclustqual`. We use `ward.D`, i.e. we don't square the dissimilarities because LCS is not an Euclidean distance. Here, with 4 distinct sequences, the number of clusters is at most 4. The CQIs, computed by means of `WeightedCluster` [@Studer2013], of the MC-sets are stored in the `qual.tab` attribute. Below, we display the second element only of the list:
+
+```{r clusqual}
+clqual <- MCclustqual(dist.list, clustmeth="ward.D", ncluster=4, verbose=FALSE)
+round(clqual$qual.tab[[2]],3)
+
+```
+The `print` method for the outcome of `MCclustqual` prints, by default, the table of cluster number $k$ for which the statistics reach their maximum (minimum for HC) by MC-sets and the frequency of these numbers $k$ across the MC-sets.
+
+```{r qual.max}
+clqual
+
+```
+Distribution of optimal number $k$ over the three MC-sets:
+
+```{r qual.mfreq}
+clqual$max.freq
+
+```
+
+Plotting the PBC by number $k$ of clusters
+
+```{r plotCQI, out.width="70%", fig.width=6, fig.height=4}
+ggplotMCcqi(clqual, cqi="PBC") 
+```
+
+From this plot, three clusters seems a good solution. So, let us now partition in three groups with PAM and retrieve the vector of cluster membership (labelled with index of cluster medoids) by MC-sets:
+
+
+```{r clusters3}
+clust.list <- lapply(dist.list, WeightedCluster::wcKMedoids, k=3, cluster.only=TRUE)
+clust.list
+
+```
+
+
+The clustering of the second MC-set gives the same results as of the observed sequences. Using `MCclustcomp`, which uses package `aricode` [@ChiquetRigaillSundqvistDervieuxEtAl2023aricodeEfficientComputations;@SundqvistChiquetRigalli2022CS], we can compute cluster dissimilarity indices (CDI) for comparing the solutions of the MC-sets with the solution obtained for the observed sequences:
+
+```{r clustcomp, echo=TRUE, warning=FALSE, message=FALSE}
+(res <- MCclustcomp(clust.list, AMI=TRUE))
+
+```
+
+
+## MDS scores
+
+The numerical representation of sequences by multidimensional scalling (MDS) scores is often used to order sequences in index plots and to visualize the topological organization of clusters.[@PiccarretaLior2010JRSSSA] Function `MCmdscorr` computes the first MDS factor of each MC-set and, when observed dissimilarities are provided, the correlation between the scores of each MC-set with the scores for the observed dissimilarities. By default the function returns the Spearman correlations:
+
+```{r MCmdscorr, message=FALSE}
+MCmdscorr(dist.list, verbose=FALSE, core=1)
+
+```
+
+We get the first MDS scores either by setting `what="mds"` or the second element of the list returned when `what="both"`. We illustrate by using the scores as sorting variable in index plots.
+
+
+```{r MCmds-scores, out.width="70%", fig.width=8, fig.height=7}
+MCmdsboth <- MCmdscorr(dist.list, what="both") 
+MCmds <- MCmdsboth[[2]]
+nset <- length(MCmds)
+title <- paste0("MC",1:nset)
+if (attr(dist.list,"obs")) title[nset] <- "Obs"
+
+layout(matrix(c(1:4,rep(5,4)),nrow=2,byrow=TRUE), heights = c(.75,.25))
+for (i in 1:length(altseq.list)) {
+  seqIplot(altseq.list[[i]],sortv=MCmds[[i]], with.legend=FALSE, 
+           ylab=NA, yaxis=FALSE, main=title[i])
+}
+seqlegend(altseq.list[[1]],ncol=3, cex=1.5 )
+
+```
+
+There is no specific function for more than one MDS factor by MCset. However, they can easily be obtained with `lapply`.
+
+```{r 2mdsfactors}
+
+mds2.list <- lapply(dist.list, cmdscale, k=2)
+mds2.list[[1]]
+
+```
+Computing MDS scores is time consuming. Therefore, the previous computation can be very long when the number of sequences and the number of MC-sets is large. We strongly suggest using parallel computation in that case.
+
+<!--
+# comment [comment]: # ```{r kable, echo=FALSE, results='asis'}
+# [comment]: # knitr::kable(comptab, digits=c(2,3,2,2,2,3))
+# [comment]: # ```
+-->
+
+## Closing remarks
+
+This vignette described the basic usage of the functions provided by `MCseqReplic`. Please refer to help pages for a full list of the options of each function. For example, `MCmdscorr` and `MCclustqual` propose options of parallel computing to replicate the time consuming computation of MDS scores and range of CQIs values. 
+
+For illustration, the vignette used a small toy example dataset, which allowed to print most of the results returned by the functions. Real datasets are much larger and, as already mentioned, they should be replicated at least 100 times to sufficiently stabilize sensitivity results. As a consequence, it would not make sense to print the full outcomes of each function. Outcomes such as the list of MC-sets and the list of dissimilarity matrices are supposed to feed further analyses and plots. There are `print` and `summary` methods for the outcome of some functions (`MCseqdistSE`, `MCratios`, `MCclustqual`) that print partial and summary results. 
+
+## References

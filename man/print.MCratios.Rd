@@ -22,7 +22,7 @@ Last printed table, a \code{matrix} when \code{toref} attribute is \code{TRUE} a
 Prints ratios for each pair of the first \code{n} sequences.
 }
 \seealso{
-\code{\link{seqdistMCSE}}, \code{\link{MCratios}}.
+\code{\link{MCratios}}. %\code{\link{seqdistMCSE}},
 }
 \author{
 Gilbert Ritschard

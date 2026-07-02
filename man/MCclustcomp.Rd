@@ -4,7 +4,7 @@
 \alias{MCclustcomp}
 \title{Comparing MC-clusters with cluster of observed data}
 \usage{
-MCclustcomp(clustlist, clust.o = NULL, weights = NULL)
+MCclustcomp(clustlist, clust.o = NULL, weights = NULL, AMI = FALSE)
 }
 \arguments{
 \item{clustlist}{List of MC-replicated vectors of cluster memberships.}
@@ -12,15 +12,19 @@ MCclustcomp(clustlist, clust.o = NULL, weights = NULL)
 \item{clust.o}{Cluster memberships based on observed dissimilarities.}
 
 \item{weights}{vector of doubles. Case weights. If \code{NULL} (default), equal weights are used.}
+
+\item{AMI}{logical. AMI is more costly! Should AMI also be computed. Deafult is FALSE.}
 }
 \value{
-A table with in columns the list of comparison scores provided by \code{aricode::\link[aricode]{clustComp}} for each replicated set, except Chi2, which is replaced by Cramer's V.
+A table with in columns the list of comparison scores provided by \code{aricode::\link[aricode]{compare_clustering}} for each replicated set, except Chi2, which is replaced by Cramer's V.
 }
 \description{
-Comparison indexes between clusters based on observed data and each of MC-replicated clusters.
+Cluster comparison indices (CCI) between clusters based on observed data and each of the MC-replicated partitions.
 }
 \details{
 When \code{diss.o=NULL}, the last element of \code{disslist} is taken as \code{diss.o} and the other elements as sets of MC-replicated dissimilarities.
+
+For a description of the CCIs, see \insertCite{SundqvistChiquetRigalli2022CS}{MCseqReplic}.
 }
 \examples{
 ## mini test data, 6 sequences of length 4, 4 unique sequences
@@ -48,8 +52,12 @@ clustlist <- lapply(disslist, wcKMedoids, k=2, cluster.only=TRUE)
 res <- MCclustcomp(clustlist, clust.o=clust.o)
 res
 
-
+}
+\references{
+\insertNoCite{ChiquetRigaillSundqvistDervieuxEtAl2023aricodeEfficientComputations}{MCseqReplic}
+  \insertNoCite{SundqvistChiquetRigalli2022CS}{MCseqReplic}
+  \insertAllCited{}
 }
 \seealso{
-\code{\link[aricode]{clustComp}}
+\code{\link[aricode]{compare_clustering}}
 }

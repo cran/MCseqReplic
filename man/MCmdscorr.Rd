@@ -12,6 +12,7 @@ MCmdscorr(
   what = "corr",
   core = 1,
   snow = TRUE,
+  verbose = !silent,
   silent = FALSE
 )
 }
@@ -26,11 +27,13 @@ MCmdscorr(
 
 \item{what}{String. One of \code{"corr"} (correlations, default), \code{"mds"} (list of mds scores), and \code{"both"}.}
 
-\item{core}{Integer. Number of cores for parallel computing.}
+\item{core}{Integer or \code{"auto"}. Number of cores for parallel computing If \code{"auto"}, the maximum available cores are used.}
 
 \item{snow}{Logical. If \code{TRUE}, \code{doSNOW} is used for parallel computing, otherwise \code{doParallel} is used.}
 
-\item{silent}{Logical. Should waiting and timing messages be hidden?}
+\item{verbose}{Logical. Should waiting and timing messages be printed?}
+
+\item{silent}{Logical. Deprecated, use \code{!verbose} instead.}
 }
 \value{
 when \code{what="corr"}, vector of correlation between mds of dissimilarities in MC-replicated sets, when \code{what="mds"}, of first mds scores, and when \code{what="both"}, list with \code{corr} as first element and \code{mdslist}, the list of mds scores as second element.

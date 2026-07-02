@@ -17,6 +17,7 @@
 #'
 #' @importFrom wCorr  weightedCorr
 #' @importFrom utils txtProgressBar setTxtProgressBar
+#' @importFrom stats as.dist
 #'
 #' @export
 #'

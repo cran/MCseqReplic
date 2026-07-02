@@ -211,7 +211,7 @@ summary.distMC <- function(object, ..., silent=FALSE){
 #' @param ... further arguments passed to or from other methods.
 #'
 #' @author Gilbert Ritschard
-#' @seealso \code{\link{seqdistMCSE}}, \code{\link{MCratios}}.
+#' @seealso \code{\link{MCratios}}. %\code{\link{seqdistMCSE}},
 #' @return Last printed table, a \code{matrix} when \code{toref} attribute is \code{TRUE} and a \code{dist} object otherwise.
 #'
 #' @export
@@ -336,5 +336,4 @@ summary.MCratios <- function(object, ..., weights=NULL, silent=FALSE, thresh=2 )
 
   return(list(fivenumb=fivenumb,prop.LT.thresh=pLTt,n.LT.thresh=nLTt,ndiss=ndiss,thresh=thresh))
 }
-
 

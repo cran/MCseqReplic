@@ -3,6 +3,7 @@ citHeader("To cite MCseqReplic please use:")
 p1 <- person("Gilbert", "Ritschard", email = "gilbert.ritschard@unige.ch")
 p2 <- person("Tim F.", "Liao", email = "tfliao@illinois.edu")
 
+citation(auto=meta)
 
 bibentry(bibtype="techreport",
   author = c(p1),
@@ -10,9 +11,11 @@ bibentry(bibtype="techreport",
   institution = "Comprehensive R Archive Network (CRAN)",
   type = "Reference manual",
   year = "2026",
+  doi = "10.32614/CRAN.package.MCseqReplic",
 
   textVersion="Ritschard, G. (2026),
-  Package MCseqReplic, Comprehensive R Archive Network (CRAN)"
+  Package MCseqReplic, Comprehensive R Archive Network (CRAN),
+  doi: 10.32614/CRAN.package.MCseqReplic"
 )
 
 bibentry(bibtype="article",
@@ -24,6 +27,7 @@ bibentry(bibtype="article",
 
   textVersion="Ritschard, G. and Liao T.F. (2026),
   Assessing the Impact of Timing Errors in Sequence Analysis.
-  International Journal of Social Research Methodology, forthcoming"
+  International Journal of Social Research Methodology, 
+  doi: 10.1080/13645579.2026.2666297"
 )
 

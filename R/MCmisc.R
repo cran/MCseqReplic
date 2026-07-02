@@ -79,3 +79,18 @@ w.rank <- function(x, w=rep(1,length(x))) {
   rnk[rord]
 }
 
+###############
+
+set_ncores <- function(core){
+  if (is.null(core) || (is.character(core) & core != "auto"))
+    stop('core must be numeric or "auto"')
+  if (core=="auto" || core > 2){
+    available.cores <- parallelly::availableCores(logical = TRUE)
+    if (core == "auto") {
+      core <- available.cores - 1
+    } else {
+      core <- round(min(core, available.cores-1))
+    }
+  }
+  core <- max(core,1)
+}

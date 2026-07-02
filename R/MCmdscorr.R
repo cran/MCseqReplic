@@ -5,9 +5,10 @@
 #' @param method String. One of \code{"Spearman"} (default) and \code{"Pearson"}.
 #' @param weights vector of doubles. Case weights. If \code{NULL} (default), equal weights are used.
 #' @param what String. One of \code{"corr"} (correlations, default), \code{"mds"} (list of mds scores), and \code{"both"}.
-#' @param core Integer. Number of cores for parallel computing.
+#' @param core Integer or \code{"auto"}. Number of cores for parallel computing If \code{"auto"}, the maximum available cores are used.
 #' @param snow Logical. If \code{TRUE}, \code{doSNOW} is used for parallel computing, otherwise \code{doParallel} is used.
-#' @param silent Logical. Should waiting and timing messages be hidden?
+#' @param verbose Logical. Should waiting and timing messages be printed?
+#' @param silent Logical. Deprecated, use \code{!verbose} instead.
 #'
 #' @details
 #' When \code{diss.o=NULL}, the last element of \code{disslist} is taken as \code{diss.o} and the other elements as sets of MC-replicated dissimilarities.
@@ -19,6 +20,7 @@
 #' @importFrom wCorr  weightedCorr
 #' @importFrom doParallel registerDoParallel
 #' @importFrom parallel makePSOCKcluster stopCluster makeCluster detectCores
+#' @importFrom parallelly availableCores
 #' @importFrom doSNOW registerDoSNOW
 #' @importFrom foreach foreach %dopar% %do% %:%
 #' @importFrom utils txtProgressBar setTxtProgressBar
@@ -47,7 +49,7 @@
 #'
 #'
 MCmdscorr <- function(disslist, diss.o=NULL, method="Spearman", weights=NULL, what="corr",
-                      core=1, snow=TRUE, silent=FALSE){
+                      core=1, snow=TRUE, verbose=!silent, silent=FALSE){
   message(method," correlations between 1st MDS factor of observed and replicated distances")
   N <- length(disslist)
   if (is.null(diss.o)){
@@ -74,10 +76,12 @@ MCmdscorr <- function(disslist, diss.o=NULL, method="Spearman", weights=NULL, wh
     else weighted <- TRUE
   }
 
+  core <- set_ncores(core)
+
   message("Computing first MDS scores of observed dissimilarities")
   mds.o <- vegan::wcmdscale(diss.o, k=1, w=weights)
   message("Computing first MDS scores of replicated dissimilarities")
-  if (!silent & (core==1 | snow)) {
+  if (verbose & (core==1 | snow)) {
     #cat("\n")
     progress <- function(n) setTxtProgressBar(pb, n)
     opts <- list(progress = progress)
@@ -89,10 +93,10 @@ MCmdscorr <- function(disslist, diss.o=NULL, method="Spearman", weights=NULL, wh
     #mdslist <- lapply(disslist,wcmdscale,k=1, w=weights)
     mdslist <- list()
     for (i in 1:N){
-      if (!silent) setTxtProgressBar(pb, i)
+      if (verbose) setTxtProgressBar(pb, i)
       mdslist[[i]] <- vegan::wcmdscale(disslist[[i]],k=1, w=weights)
     }
-    if (!silent) close(pb)
+    if (verbose) close(pb)
   }
   else { ## parallel computing
     #pb <- txtProgressBar(min=1, max=k-1, initial=1, style=3)
@@ -108,7 +112,7 @@ MCmdscorr <- function(disslist, diss.o=NULL, method="Spearman", weights=NULL, wh
     }
 
     stopCluster(cl)
-    if(!silent & snow) {
+    if(verbose & snow) {
       close(pb)
     }
   }

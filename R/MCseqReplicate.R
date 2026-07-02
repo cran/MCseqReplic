@@ -23,8 +23,12 @@
 #'
 #' @seealso \code{\link{MCpj}}
 #'
+#'
+#'
 #' @references
-#' Ritschard, G. and Liao, T.F. (2026). Assessing the Impact of Timing Errors in Sequence Analysis. \emph{International Journal of Social Research Methodology}. Forthcoming
+#'   \insertNoCite{RitschardLiao2026IJoSRM}{MCseqReplic}
+#'   \insertAllCited{}
+#'
 #'
 #'
 #' @author Gilbert Ritschard
@@ -36,6 +40,8 @@
 #'
 #' @import TraMineR
 #' @importFrom WeightedCluster wcAggregateCases
+#' @importFrom stats runif sd
+#' @importFrom Rdpack reprompt
 #'
 #'
 #' @examples
